@@ -2,6 +2,7 @@
 package app;
 
 import enums.TipoUnidad;
+import enums.TipoRecorrido;
 import modelo.Libro;
 import modelo.UnidadBiblioteca;
 import negocio.ArbolBiblioteca;
@@ -45,14 +46,14 @@ public class Main {
             "E003", "Estante de Marketing", TipoUnidad.ESTANTE
         ));
 
-        // 4. Mostrar el arbol general
+        // 4. Mostrar la estructura
         System.out.println("\n1. ESTRUCTURA DE LA BIBLIOTECA");
         arbol.mostrarEstructura();
 
         System.out.println("\nTotal de unidades: "
             + arbol.contarUnidades());
 
-        // 5. Obtener los catalogos de cada estante
+        // 5. Obtener los catalogos
         NodoUnidad estante1 = arbol.buscar("E001");
         NodoUnidad estante2 = arbol.buscar("E002");
         NodoUnidad estante3 = arbol.buscar("E003");
@@ -61,7 +62,7 @@ public class Main {
         CatalogoABB catalogo2 = estante2.getCatalogo();
         CatalogoABB catalogo3 = estante3.getCatalogo();
 
-        // 6. Insertar libros en sus respectivos estantes
+        // 6. Registrar los 13 libros
         catalogo1.insertar(new Libro(
             50, "Java Basico", "Juan Perez", 2020
         ));
@@ -104,7 +105,7 @@ public class Main {
             65, "Estrategias de Marketing", "Paula Rios", 2024
         ));
 
-        // 7. Contar libros
+        // 7. Cantidad de libros
         int totalLibros = catalogo1.contar()
                         + catalogo2.contar()
                         + catalogo3.contar();
@@ -115,8 +116,9 @@ public class Main {
         System.out.println("Estante E003: " + catalogo3.contar());
         System.out.println("Total de libros: " + totalLibros);
 
-        // 8. Buscar un libro
+        // 8. Busqueda
         System.out.println("\n3. BUSQUEDA DE LIBROS");
+
         Libro encontrado = catalogo1.buscar(30);
 
         if (encontrado != null) {
@@ -125,7 +127,7 @@ public class Main {
             System.out.println("Libro no encontrado");
         }
 
-        // 9. Recorridos del ABB
+        // 9. Recorridos
         System.out.println("\n4. PREORDEN - ESTANTE E001");
         catalogo1.preorden();
 
@@ -135,7 +137,7 @@ public class Main {
         System.out.println("\n6. POSORDEN - ESTANTE E001");
         catalogo1.posorden();
 
-        // 10. Comprobar duplicados
+        // 10. Validar duplicados
         System.out.println("\n7. PRUEBA DE CODIGO DUPLICADO");
 
         boolean duplicado = catalogo1.insertar(new Libro(
@@ -144,7 +146,7 @@ public class Main {
 
         System.out.println("Se inserto el duplicado: " + duplicado);
 
-        // 11. Comprobar que no se pueden crear areas dentro de estantes
+        // 11. Validar estructura
         System.out.println("\n8. PRUEBA DE ESTRUCTURA INVALIDA");
 
         boolean invalido = arbol.agregarUnidad(
@@ -156,6 +158,78 @@ public class Main {
 
         System.out.println("Se agrego el area al estante: " + invalido);
 
+        // 12. Modificar un libro existente
+        System.out.println("\n9. MODIFICACION DE LIBROS");
+
+        boolean modificado = catalogo1.modificar(
+            30,
+            "Estructuras de Datos Avanzadas",
+            "Ana Lopez",
+            2025
+        );
+
+        System.out.println("Se modifico el libro: " + modificado);
+        System.out.println("Libro actualizado: " + catalogo1.buscar(30));
+
+        // 13. Contar libros en un rango
+        System.out.println("\n10. CONTEO DE LIBROS POR RANGO");
+
+        int cantidadRango = catalogo1.contarEnRango(20, 50);
+
+        System.out.println("Rango de codigos: 20 a 50");
+        System.out.println("Cantidad encontrada: " + cantidadRango);
+
+        // 14. Mostrar el camino de busqueda
+        System.out.println("\n11. CAMINO DE BUSQUEDA");
+
+        System.out.println("Buscar codigo 40:");
+        System.out.println(catalogo1.caminoBusqueda(40));
+
+        System.out.println("Buscar codigo 70:");
+        System.out.println(catalogo1.caminoBusqueda(70));
+
+        // 15. Validar el arbol binario
+        System.out.println("\n12. VALIDACION DEL ABB");
+
+        System.out.println("Estante E001 valido: "
+            + catalogo1.esABBValido());
+
+        System.out.println("Estante E002 valido: "
+            + catalogo2.esABBValido());
+
+        System.out.println("Estante E003 valido: "
+            + catalogo3.esABBValido());
+
+        // 16. Mostrar la traza del recorrido
+        System.out.println("\n13. TRAZA DEL RECORRIDO INORDEN");
+
+        System.out.println(
+            catalogo1.trazaRecorrido(TipoRecorrido.INORDEN)
+        );
+
+        // 17. Eliminar un libro
+        System.out.println("\n14. ELIMINACION DE LIBROS");
+
+        System.out.println("Libros antes: " + catalogo1.contar());
+
+        boolean eliminado = catalogo1.eliminar(30);
+
+        System.out.println("Se elimino el codigo 30: " + eliminado);
+        System.out.println("Libros despues: " + catalogo1.contar());
+        System.out.println("Buscar codigo eliminado: "
+            + catalogo1.buscar(30));
+
+        System.out.println("ABB valido despues de eliminar: "
+            + catalogo1.esABBValido());
+
+        // 18. Probar eliminacion de un codigo inexistente
+        System.out.println("\n15. ELIMINACION DE CODIGO INEXISTENTE");
+
+        boolean inexistente = catalogo1.eliminar(999);
+
+        System.out.println("Se elimino el codigo 999: " + inexistente);
+
+        // Final
         System.out.println("\n========================================");
         System.out.println("          FIN DEL PROGRAMA");
         System.out.println("========================================");
