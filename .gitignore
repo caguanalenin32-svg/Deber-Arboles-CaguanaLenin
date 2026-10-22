@@ -1,0 +1,7 @@
+
+# Archivos compilados de Java
+out/
+*.class
+
+# Archivos temporales
+*.log
