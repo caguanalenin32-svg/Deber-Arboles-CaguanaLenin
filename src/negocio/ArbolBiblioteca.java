@@ -2,15 +2,16 @@
 package negocio;
 
 import modelo.UnidadBiblioteca;
+import enums.TipoUnidad;
 
 public class ArbolBiblioteca {
 
     private NodoUnidad raiz;
 
     public ArbolBiblioteca(UnidadBiblioteca biblioteca) {
-        if (biblioteca == null) {
+        if (biblioteca == null || biblioteca.getTipo() != TipoUnidad.BIBLIOTECA) {
             throw new IllegalArgumentException(
-                "La biblioteca no puede ser nula"
+                "La raiz debe ser una biblioteca valida"
             );
         }
 
@@ -21,9 +22,13 @@ public class ArbolBiblioteca {
         return raiz;
     }
 
-    // Buscar una unidad mediante su codigo
+    // Buscar una unidad sin distinguir mayusculas y minusculas
     public NodoUnidad buscar(String codigo) {
-        return buscarRecursivo(raiz, codigo);
+        if (codigo == null || codigo.trim().isEmpty()) {
+            return null;
+        }
+
+        return buscarRecursivo(raiz, codigo.trim());
     }
 
     private NodoUnidad buscarRecursivo(NodoUnidad actual, String codigo) {
@@ -31,7 +36,7 @@ public class ArbolBiblioteca {
             return null;
         }
 
-        if (actual.getDato().getCodigo().equals(codigo)) {
+        if (actual.getDato().getCodigo().equalsIgnoreCase(codigo)) {
             return actual;
         }
 
@@ -46,13 +51,9 @@ public class ArbolBiblioteca {
         return null;
     }
 
-    // Agregar un area o estante a una unidad existente
-    public boolean agregarUnidad(String codigoPadre, UnidadBiblioteca unidad) {
-        if (unidad == null) {
-            return false;
-        }
-
-        if (buscar(unidad.getCodigo()) != null) {
+    // Agregar una unidad respetando la jerarquia
+    public boolean agregar(String codigoPadre, UnidadBiblioteca nueva) {
+        if (nueva == null || buscar(nueva.getCodigo()) != null) {
             return false;
         }
 
@@ -62,36 +63,148 @@ public class ArbolBiblioteca {
             return false;
         }
 
-        return padre.agregarHijo(new NodoUnidad(unidad));
+        return padre.agregarHijo(new NodoUnidad(nueva));
     }
 
-    // Mostrar la estructura de la biblioteca
-    public void mostrarEstructura() {
-        mostrarRecursivo(raiz, 0);
+    // Compatibilidad con el programa que ya tenemos
+    public boolean agregarUnidad(String codigoPadre, UnidadBiblioteca unidad) {
+        return agregar(codigoPadre, unidad);
     }
 
-    private void mostrarRecursivo(NodoUnidad actual, int nivel) {
+    // Calcular altura en numero de aristas
+    public int altura() {
+        return alturaRecursiva(raiz);
+    }
+
+    private int alturaRecursiva(NodoUnidad actual) {
+        if (actual == null) {
+            return -1;
+        }
+
+        int mayorAltura = -1;
+
+        for (NodoUnidad hijo : actual.getHijos()) {
+            int alturaHijo = alturaRecursiva(hijo);
+
+            if (alturaHijo > mayorAltura) {
+                mayorAltura = alturaHijo;
+            }
+        }
+
+        return mayorAltura + 1;
+    }
+
+    // Contar unidades que no tienen hijos
+    public int contarHojas() {
+        return contarHojasRecursivo(raiz);
+    }
+
+    private int contarHojasRecursivo(NodoUnidad actual) {
+        if (actual == null) {
+            return 0;
+        }
+
+        if (actual.esHoja()) {
+            return 1;
+        }
+
+        int total = 0;
+
+        for (NodoUnidad hijo : actual.getHijos()) {
+            total += contarHojasRecursivo(hijo);
+        }
+
+        return total;
+    }
+
+    // Obtener nivel de una unidad
+    public int nivel(String codigo) {
+        if (codigo == null || codigo.trim().isEmpty()) {
+            return -1;
+        }
+
+        return nivelRecursivo(raiz, codigo.trim(), 0);
+    }
+
+    private int nivelRecursivo(NodoUnidad actual, String codigo, int nivelActual) {
+        if (actual == null) {
+            return -1;
+        }
+
+        if (actual.getDato().getCodigo().equalsIgnoreCase(codigo)) {
+            return nivelActual;
+        }
+
+        for (NodoUnidad hijo : actual.getHijos()) {
+            int resultado = nivelRecursivo(hijo, codigo, nivelActual + 1);
+
+            if (resultado != -1) {
+                return resultado;
+            }
+        }
+
+        return -1;
+    }
+
+    // Mostrar jerarquia en preorden con dos espacios por nivel
+    public String mostrarJerarquia() {
+        StringBuilder resultado = new StringBuilder();
+        mostrarJerarquiaRecursivo(raiz, 0, resultado);
+        return resultado.toString();
+    }
+
+    private void mostrarJerarquiaRecursivo(
+            NodoUnidad actual, int nivel, StringBuilder resultado) {
+
         if (actual == null) {
             return;
         }
 
         for (int i = 0; i < nivel; i++) {
-            System.out.print("    ");
+            resultado.append("  ");
         }
 
-        System.out.println(actual.getDato());
+        resultado.append(actual.getDato()).append("\n");
 
         for (NodoUnidad hijo : actual.getHijos()) {
-            mostrarRecursivo(hijo, nivel + 1);
+            mostrarJerarquiaRecursivo(hijo, nivel + 1, resultado);
         }
     }
 
-    // Contar las unidades del arbol general
-    public int contarUnidades() {
-        return contarRecursivo(raiz);
+    // Compatibilidad con el programa anterior
+    public void mostrarEstructura() {
+        System.out.print(mostrarJerarquia());
     }
 
-    private int contarRecursivo(NodoUnidad actual) {
+    // Contar libros de todos los estantes
+    public int contarLibrosTotal() {
+        return contarLibrosRecursivo(raiz);
+    }
+
+    private int contarLibrosRecursivo(NodoUnidad actual) {
+        if (actual == null) {
+            return 0;
+        }
+
+        int total = 0;
+
+        if (actual.getCatalogo() != null) {
+            total += actual.getCatalogo().contar();
+        }
+
+        for (NodoUnidad hijo : actual.getHijos()) {
+            total += contarLibrosRecursivo(hijo);
+        }
+
+        return total;
+    }
+
+    // Contar todas las unidades del arbol
+    public int contarUnidades() {
+        return contarUnidadesRecursivo(raiz);
+    }
+
+    private int contarUnidadesRecursivo(NodoUnidad actual) {
         if (actual == null) {
             return 0;
         }
@@ -99,7 +212,7 @@ public class ArbolBiblioteca {
         int total = 1;
 
         for (NodoUnidad hijo : actual.getHijos()) {
-            total += contarRecursivo(hijo);
+            total += contarUnidadesRecursivo(hijo);
         }
 
         return total;
