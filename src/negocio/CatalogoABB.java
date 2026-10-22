@@ -82,5 +82,52 @@ public class CatalogoABB {
         return 1
             + contarRecursivo(actual.getIzquierdo())
             + contarRecursivo(actual.getDerecho());
+            }
+    
+    // Recorrido en preorden: raiz, izquierda, derecha
+    public void preorden() {
+        preordenRecursivo(raiz);
     }
+
+    private void preordenRecursivo(NodoLibro actual) {
+        if (actual == null) {
+            return;
+        }
+
+        System.out.println(actual.getDato());
+        preordenRecursivo(actual.getIzquierdo());
+        preordenRecursivo(actual.getDerecho());
+    }
+
+    // Recorrido en inorden: izquierda, raiz, derecha
+    public void inorden() {
+        inordenRecursivo(raiz);
+    }
+
+    private void inordenRecursivo(NodoLibro actual) {
+        if (actual == null) {
+            return;
+        }
+
+        inordenRecursivo(actual.getIzquierdo());
+        System.out.println(actual.getDato());
+        inordenRecursivo(actual.getDerecho());
+    }
+
+    // Recorrido en posorden: izquierda, derecha, raiz
+    public void posorden() {
+        posordenRecursivo(raiz);
+    }
+
+    private void posordenRecursivo(NodoLibro actual) {
+        if (actual == null) {
+            return;
+        }
+
+        posordenRecursivo(actual.getIzquierdo());
+        posordenRecursivo(actual.getDerecho());
+        System.out.println(actual.getDato());
+    }
+
+
 }
